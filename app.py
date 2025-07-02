@@ -30,7 +30,7 @@ st.set_page_config(page_title="Klasifikasi Daun Herbal", layout="centered")
 # --- Load model sekali ---
 @st.cache_resource
 def load_model():
-    model = tf.keras.models.load_model("model/model_8_ft.h5")  # .h5 atau .keras
+    model = load_model("model/model_8_ft.h5")
     return model
 
 model = load_model()
