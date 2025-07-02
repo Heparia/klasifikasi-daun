@@ -1,8 +1,8 @@
 import streamlit as st
-import tensorflow as tf
+from keras.models import load_model
+from keras.applications.efficientnet_v2 import preprocess_input
 import numpy as np
 from PIL import Image
-from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 from rembg import remove
 from PIL import Image
 import io
