@@ -1,6 +1,6 @@
 import streamlit as st
-from keras.models import load_model
-from keras.applications.efficientnet_v2 import preprocess_input
+import tensorflow as tf
+from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 import numpy as np
 from PIL import Image
 from rembg import remove
@@ -30,7 +30,7 @@ st.set_page_config(page_title="Klasifikasi Daun Herbal", layout="centered")
 # --- Load model sekali ---
 @st.cache_resource
 def load_model():
-    model = load_model("model/model_8_ft.h5")
+    model = tf.keras.models.load_model("model/model_8_ft.h5")
     return model
 
 model = load_model()
