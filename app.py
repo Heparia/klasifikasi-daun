@@ -1,13 +1,8 @@
 import streamlit as st
 import tensorflow as tf
-from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 import numpy as np
 from PIL import Image
-from rembg import remove
-from PIL import Image
-import io
-import cv2
-
+from tensorflow.keras.applications.efficientnet_v2 import preprocess_input
 
 # --- Label dan Khasiat Herbal ---
 class_info = {
@@ -27,7 +22,7 @@ class_names = list(class_info.keys())
 
 st.set_page_config(page_title="Klasifikasi Daun Herbal", layout="centered")
 
-# --- Load model sekali ---
+# --- Load model hanya sekali ---
 @st.cache_resource
 def load_model():
     model = tf.keras.models.load_model("model/model_8_ft.h5")
@@ -36,80 +31,26 @@ def load_model():
 model = load_model()
 
 # --- UI Header ---
-# st.set_page_config(page_title="Klasifikasi Daun Herbal", layout="centered")
 st.markdown("<h1 style='text-align: center; color: green;'>🌿 Klasifikasi Daun Herbal</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center;'>Upload gambar daun dan temukan jenis serta khasiatnya!</p>", unsafe_allow_html=True)
 
-# --- File Upload ---
+# --- Upload Gambar ---
 uploaded_file = st.file_uploader("📤 Upload gambar daun...", type=["jpg", "png", "jpeg"])
 
-def remove_bg(image):
-    img_byte_arr = io.BytesIO()
-    image.save(img_byte_arr, format='PNG')
-    img_no_bg_bytes = remove(img_byte_arr.getvalue())  # returns bytes
-    return Image.open(io.BytesIO(img_no_bg_bytes))
+if uploaded_file is not None:
+    image = Image.open(uploaded_file).convert("RGB")
+    st.image(image, caption="🖼️ Gambar yang diunggah", use_container_width=True)
 
-run = st.checkbox('Nyalakan Kamera')
-
-# Menampilkan frame video
-FRAME_WINDOW = st.image([])
-
-# Mengakses webcam (0 = webcam default)
-camera = cv2.VideoCapture(0)
-captured_image = None
-
-while run:
-    ret, frame = camera.read()
-    if not ret:
-        st.warning("Gagal mengakses kamera")
-        break
-
-    # Konversi BGR ke RGB
-    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-
-    # Tampilkan frame real-time
-    FRAME_WINDOW.image(frame_rgb)
-
-    # Tombol untuk ambil gambar
-    if st.button("📸 Jepret"):
-        captured_image = Image.fromarray(frame_rgb)
-        st.success("✅ Gambar berhasil diambil.")
-        break  # Keluar dari loop agar tidak update terus
-
-# Stop video saat checkbox dimatikan
-camera.release()
-
-if captured_image is not None:
-    st.image(captured_image, caption="🖼️ Gambar Hasil Jepretan", use_container_width=True)
-
-if uploaded_file is not None or captured_image is not None:
-    # Tampilkan gambar
-    image = None
-    if uploaded_file is not None:
-        image = Image.open(uploaded_file).convert("RGB")
-    elif captured_image is not None:
-        image = captured_image
-    else:
-        image = None
-        
-    st.image(image, caption="Gambar yang diproses", use_container_width=True)
-
-    # image = Image.open(uploaded_file).convert("RGB")
-    image_no_bg = remove_bg(image).convert("RGB")
-    st.image(image, caption="Gambar tanpa latar belakang", use_container_width=True)
-
-    # st.image(image, caption="🖼️ Gambar yang diunggah", use_container_width=True)
-
-    # Preprocessing
+    # --- Preprocessing untuk prediksi ---
     img = image.resize((224, 224))
     img_array = np.array(img)
     img_batch = np.expand_dims(img_array, axis=0)
     img_preprocessed = preprocess_input(img_batch)
 
-    # Prediksi
+    # --- Prediksi ---
     predictions = model.predict(img_preprocessed)[0]
     top3_idx = predictions.argsort()[-3:][::-1]
-    
+
     st.markdown("---")
     st.subheader("🔍 Hasil Prediksi:")
 
